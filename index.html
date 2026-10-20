@@ -1,4 +1,71 @@
-<!doctype html><html><script>
+<!doctype html><html><!-- PolyStar flight version announcement. Paste this just before </body> in index.html. -->
+<script>
+(() => {
+  const URL = "https://tastysoup10.github.io/PolyStar0.6.3/";
+  const KEY = "polystar_flight_announcement_dismissed";
+  try {
+    if (localStorage.getItem(KEY) === "1") return;
+  } catch {}
+
+  const style = document.createElement("style");
+  style.textContent = `
+    #flight-announcement { position: fixed; inset: 0; z-index: 100000; display: flex; align-items: center;
+      justify-content: center; background: rgba(0, 0, 0, 0.55); font-family: ForcedSquare, Arial, sans-serif; }
+    #flight-announcement .box { width: min(520px, calc(100% - 32px)); background: #212b58; color: #fff;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5); text-align: center; }
+    #flight-announcement h2 { margin: 0; padding: 10px; font-size: 30px; font-weight: normal; background: #28346a; }
+    #flight-announcement p { margin: 18px 22px; font-size: 18px; line-height: 1.4; }
+    #flight-announcement .buttons { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; padding: 0 16px 18px; }
+    #flight-announcement button, #flight-announcement a { font: inherit; font-size: 20px; color: #fff;
+      background: #112052; border: none; padding: 8px 18px; cursor: pointer; text-decoration: none;
+      clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%); }
+    #flight-announcement button:hover, #flight-announcement a:hover { background: #334b77; }
+    #flight-announcement a { background: #e0a800; color: #1a1a1a; }
+    #flight-announcement a:hover { background: #ffc61a; }
+  `;
+
+  const show = () => {
+    document.head.appendChild(style);
+    const overlay = document.createElement("div");
+    overlay.id = "flight-announcement";
+    overlay.innerHTML = `
+      <div class="box" role="dialog" aria-label="New flight version">
+        <h2>✈ PolyStar can fly!</h2>
+        <p>There's a new version of PolyStar where your car turns into a plane. Take off, fly the tracks,
+          and race other pilots in multiplayer. Flight can be switched off any time from the main menu.</p>
+        <div class="buttons">
+          <a href="${URL}" target="_blank" rel="noopener">Try it</a>
+          <button data-action="later">Later</button>
+          <button data-action="never">Don't show again</button>
+        </div>
+      </div>`;
+    const close = never => {
+      if (never) {
+        try { localStorage.setItem(KEY, "1"); } catch {}
+      }
+      overlay.remove();
+    };
+    overlay.querySelector('[data-action="later"]').addEventListener("click", () => close(false));
+    overlay.querySelector('[data-action="never"]').addEventListener("click", () => close(true));
+    overlay.querySelector("a").addEventListener("click", () => close(true));
+    // keep clicks and key presses from reaching the game while the message is open
+    for (const type of ["keydown", "keyup", "pointerdown", "mousedown"]) {
+      overlay.addEventListener(type, e => e.stopPropagation());
+    }
+    document.body.appendChild(overlay);
+  };
+
+  // wait until the main menu is on screen, so the message does not cover the loading screen or tutorial
+  const timer = setInterval(() => {
+    const menuShown = [...document.querySelectorAll("#ui button")].some(b => b.offsetParent && /Garage/.test(b.innerText));
+    if (menuShown) {
+      clearInterval(timer);
+      show();
+    }
+  }, 500);
+})();
+</script>
+<script>
  window.polytrackModConfiguration = {
   modName: "polytrack 0.6.3",
   author: "Tastysoup10",
